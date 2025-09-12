@@ -4,12 +4,8 @@ import Footer from "../components/Footer"
 export function Login() {
   return (
     <>
-    <Role/>
-    <Footer/>
-    
-    
-    
-    
+      <Role/>
+      <Footer/>
     </>
   )
 }

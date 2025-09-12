@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 const roleInputs = {
   farmer: [
     { name: "name", label: "Full Name / Farm Name", type: "text" },
+    { name: "email", label: "Email", type: "email" },
     { name: "phone", label: "Phone Number", type: "tel" },
     { name: "location", label: "Location / Village / District", type: "text" },
     { name: "password", label: "Password / OTP", type: "password" },
@@ -28,6 +30,7 @@ export default function Register() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,15 +47,28 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    // Here you would send formData to your backend for registration
-    setSuccess(`Registration successful as ${selectedRole}!`);
-    setTimeout(() => {
-      navigate("/login");
-    }, 1500);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: selectedRole, ...formData })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
+      setSuccess(`Registration successful as ${selectedRole}!`);
+      if (login && data.token) {
+        login(data.token, data.user);
+        navigate(`/${selectedRole}-dashboard`);
+      } else {
+        setTimeout(() => navigate('/login'), 1000);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -142,7 +158,7 @@ export default function Register() {
             onClick={() => setSelectedRole(null)}
             className="text-center text-sm text-gray-500 mt-6 cursor-pointer hover:text-green-600"
           >
-            ← Change Role
+            Change Role
           </p>
         </div>
       )}

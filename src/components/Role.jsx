@@ -1,38 +1,30 @@
 // src/components/Role.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
 export default function Role() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [formData, setFormData] = useState({});
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // Mock credentials
-  const mockUsers = {
-    farmer: {
-      "Ramesh Farm": { phone: "9876543210", location: "Nashik", password: "farmer123" },
-    },
-    distributor: {
-      "Agro Distributors": { email: "distributor@mail.com", phone: "9998887777", license: "GST12345", password: "dist123" },
-    },
-    retailer: {
-      "FreshMart": { email: "retail@mail.com", phone: "8887776666", password: "retail123" },
-    },
-  };
+  // Backend base URL
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   // Login input configs: only name and password for each role
   const roleInputs = {
     farmer: [
-      { name: "name", label: "Full Name / Farm Name", type: "text" },
-      { name: "password", label: "Password / OTP", type: "password" },
+      { name: "email", label: "Email", type: "email" },
+      { name: "password", label: "Password", type: "password" },
     ],
     distributor: [
-      { name: "name", label: "Business / Company Name", type: "text" },
+      { name: "email", label: "Email", type: "email" },
       { name: "password", label: "Password", type: "password" },
     ],
     retailer: [
-      { name: "name", label: "Shop / Business Name", type: "text" },
+      { name: "email", label: "Email", type: "email" },
       { name: "password", label: "Password", type: "password" },
     ],
   };
@@ -41,28 +33,22 @@ export default function Role() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    const roleData = mockUsers[selectedRole];
-    const user = roleData[formData.name];
-
-    if (user) {
-      let isValid = true;
-      Object.keys(user).forEach((key) => {
-        if (user[key] !== formData[key]) {
-          isValid = false;
-        }
+    try {
+      const res = await fetch(`${apiBase}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password, role: selectedRole })
       });
-
-      if (isValid) {
-        navigate(`/${selectedRole}-dashboard`);
-      } else {
-        setError("❌ Invalid credentials. Please try again.");
-      }
-    } else {
-      setError("❌ User not found.");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login failed');
+      login(data.token, data.user);
+      const target = `/${data.user.role}-dashboard`;
+      navigate(target);
+    } catch (err) {
+      setError(`❌ ${err.message}`);
     }
   };
 
