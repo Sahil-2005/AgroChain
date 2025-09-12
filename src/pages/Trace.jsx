@@ -113,56 +113,57 @@ const Trace = () => {
 
   return (
     <>
-    <div className="min-h-screen bg-gray-50">
-    
-      
-
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Consumer Traceability Badge */}
-        <div className="text-center mb-8">
-          <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-            Consumer Traceability
-          </span>
-        </div>
-
-        {/* Main Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Trace Your Produce</h1>
-          <p className="text-gray-600 text-lg">
-            Scan or enter a QR code to see the complete journey of your produce from farm
-            <br />
-            to table, verified by blockchain technology.
-          </p>
-        </div>
-
-        {/* QR Code Scanner Section */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <QrCode className="w-6 h-6 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">QR Code Scanner</h2>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* Consumer Traceability Badge */}
+          <div className="text-center mb-8 fade-in">
+            <span className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 px-6 py-3 rounded-full text-sm font-medium shadow-sm">
+              🔍 Consumer Traceability
+            </span>
           </div>
-          <p className="text-gray-600 mb-4">
-            Scan the QR code on your produce packaging or enter it manually
-          </p>
-          <div className="flex items-center space-x-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">QR Code</label>
-              <input
-                type="text"
-                value={qrCode}
-                onChange={(e) => setQrCode(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="Enter QR code"
-              />
+
+          {/* Main Title */}
+          <div className="text-center mb-8 fade-in-delay-1">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+              Trace Your Produce
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Scan or enter a QR code to see the complete journey of your produce from farm
+              <br />
+              to table, verified by blockchain technology.
+            </p>
+          </div>
+
+          {/* QR Code Scanner Section */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8 card-hover fade-in-delay-2">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <QrCode className="w-6 h-6 text-green-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">QR Code Scanner</h2>
             </div>
-            <button
-              onClick={handleTrace}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors mt-6"
-            >
-              Trace
-            </button>
+            <p className="text-gray-600 mb-4">
+              Scan the QR code on your produce packaging or enter it manually
+            </p>
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">QR Code</label>
+                <input
+                  type="text"
+                  value={qrCode}
+                  onChange={(e) => setQrCode(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                  placeholder="Enter QR code"
+                />
+              </div>
+              <button
+                onClick={handleTrace}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 btn-animate shadow-lg"
+              >
+                Trace
+              </button>
+            </div>
           </div>
-        </div>
 
         {/* Demo QR Codes */}
         <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">

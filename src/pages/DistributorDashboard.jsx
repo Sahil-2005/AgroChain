@@ -17,9 +17,11 @@ import {
   Bell,
   Eye,
   Send,
-  ShoppingCart
+  ShoppingCart,
+  Loader2
 } from 'lucide-react';
 import Footer from '../components/Footer';
+import RequestPopup from '../components/RequestPopup';
 
 
 const DistributorDashboard = () => {
@@ -27,6 +29,36 @@ const DistributorDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArea, setSelectedArea] = useState('All Areas');
   const [selectedProductType, setSelectedProductType] = useState('All Products');
+  const [showRequestPopup, setShowRequestPopup] = useState(false);
+  const [requestFormData, setRequestFormData] = useState({
+    productName: '',
+    quantity: '',
+    preferredPrice: '',
+    deliveryDate: '',
+    specialRequirements: ''
+  });
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+
+  const handleRequestSubmit = async (formData) => {
+    setIsSubmittingRequest(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Request submitted:', formData);
+      setShowRequestPopup(false);
+      setRequestFormData({
+        productName: '',
+        quantity: '',
+        preferredPrice: '',
+        deliveryDate: '',
+        specialRequirements: ''
+      });
+    } catch (error) {
+      console.error('Error submitting request:', error);
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
 
   // Sample data
   const dashboardStats = {
@@ -343,11 +375,14 @@ const DistributorDashboard = () => {
                       <p className="text-sm text-gray-600">{product.quantity} • {product.price} • {product.grade}</p>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="flex items-center space-x-1 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors">
+                      <button 
+                        onClick={() => setShowRequestPopup(true)}
+                        className="flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm transition-all duration-200 btn-animate"
+                      >
                         <Send className="w-3 h-3" />
                         <span>Request</span>
                       </button>
-                      <button className="flex items-center space-x-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors">
+                      <button className="flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg text-sm transition-all duration-200 btn-animate">
                         <ShoppingCart className="w-3 h-3" />
                         <span>Purchase</span>
                       </button>
@@ -498,45 +533,56 @@ const renderRetailers = () => (
 
   return (
     <>
-   
-    <div className="min-h-screen bg-gray-50">
-    
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Dashboard Header */}
+          <div className="mb-8 fade-in">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              Distributor Dashboard
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Source products from farmers and manage distribution to retailers
+            </p>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Dashboard Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Distributor Dashboard</h1>
-          <p className="text-gray-600 text-lg">
-            Source products from farmers and manage distribution to retailers
-          </p>
-        </div>
+          {/* Navigation Tabs */}
+          <div className="mb-8 fade-in-delay-1">
+            <nav className="flex flex-wrap gap-2 md:space-x-8 md:flex-row md:gap-0 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.name}
+                  onClick={() => setActiveTab(tab.name)}
+                  className={`py-3 px-6 font-medium rounded-xl transition-all duration-300 flex-1 min-w-[140px] btn-animate ${
+                    activeTab === tab.name
+                      ? 'bg-white text-gray-900 border-2 border-blue-300 shadow-lg transform scale-105'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50 border-2 border-transparent'
+                  }`}
+                >
+                  {tab.name}
+                </button>
+              ))}
+            </nav>
+          </div>
 
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <nav className="flex flex-wrap gap-2 md:space-x-8 md:flex-row md:gap-0 overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.name}
-                onClick={() => setActiveTab(tab.name)}
-                className={`py-2 px-4 font-medium rounded-lg transition-colors flex-1 min-w-[140px] ${
-                  activeTab === tab.name
-                    ? 'bg-white text-gray-900 border border-gray-300'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab.name}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div>
-          {tabs.find(tab => tab.name === activeTab)?.component()}
+          {/* Tab Content */}
+          <div className="fade-in-delay-2">
+            {tabs.find(tab => tab.name === activeTab)?.component()}
+          </div>
         </div>
       </div>
-    </div>
-    <Footer/>
+
+      {/* Request Popup */}
+      <RequestPopup
+        isOpen={showRequestPopup}
+        onClose={() => setShowRequestPopup(false)}
+        title="Send Request to Farmer"
+        formData={requestFormData}
+        setFormData={setRequestFormData}
+        onSubmit={handleRequestSubmit}
+        userRole="distributor"
+        isLoading={isSubmittingRequest}
+      />
+      <Footer/>
     </>
   );
 };

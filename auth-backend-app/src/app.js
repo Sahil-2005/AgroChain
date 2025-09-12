@@ -15,6 +15,7 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/farmer', require('./routes/farmerRoutes'));
 
 // 404 handler
 app.use((req, res) => {

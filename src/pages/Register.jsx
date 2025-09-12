@@ -72,42 +72,53 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex flex-col items-center justify-center px-6 py-12">
       {!selectedRole ? (
         <>
-          <h2 className="text-3xl font-bold text-green-600 text-center mb-2">
-            Register Your Role
-          </h2>
-          <p className="text-gray-600 text-center mb-10 max-w-2xl">
-            Select your role in the agricultural supply chain to create your account.
-          </p>
+          <div className="text-center mb-10 fade-in">
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+              Register Your Role
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl">
+              Select your role in the agricultural supply chain to create your account.
+            </p>
+          </div>
           <div className="grid md:grid-cols-3 gap-8 w-full max-w-6xl">
-            <div className="border rounded-2xl shadow-md p-6 text-center">
-              <h3 className="text-xl font-bold text-green-700 mb-2">👩‍🌾 Farmer</h3>
-              <p className="text-gray-600 mb-4">Register as a farmer to track your produce.</p>
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 text-center card-hover fade-in-delay-1">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">👩‍🌾</span>
+              </div>
+              <h3 className="text-xl font-bold text-green-700 mb-3">Farmer</h3>
+              <p className="text-gray-600 mb-6">Register as a farmer to track your produce and connect with distributors.</p>
               <button
                 onClick={() => { setSelectedRole("farmer"); setFormData({}); }}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 btn-animate shadow-lg"
               >
                 Register as Farmer
               </button>
             </div>
-            <div className="border rounded-2xl shadow-md p-6 text-center">
-              <h3 className="text-xl font-bold text-green-700 mb-2">🚚 Distributor</h3>
-              <p className="text-gray-600 mb-4">Register as a distributor to manage logistics.</p>
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 text-center card-hover fade-in-delay-2">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🚚</span>
+              </div>
+              <h3 className="text-xl font-bold text-blue-700 mb-3">Distributor</h3>
+              <p className="text-gray-600 mb-6">Register as a distributor to manage logistics and connect farmers with retailers.</p>
               <button
                 onClick={() => { setSelectedRole("distributor"); setFormData({}); }}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 btn-animate shadow-lg"
               >
                 Register as Distributor
               </button>
             </div>
-            <div className="border rounded-2xl shadow-md p-6 text-center">
-              <h3 className="text-xl font-bold text-green-700 mb-2">🛒 Retailer</h3>
-              <p className="text-gray-600 mb-4">Register as a retailer to source quality produce.</p>
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 text-center card-hover fade-in-delay-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🛒</span>
+              </div>
+              <h3 className="text-xl font-bold text-purple-700 mb-3">Retailer</h3>
+              <p className="text-gray-600 mb-6">Register as a retailer to source quality produce and serve consumers.</p>
               <button
                 onClick={() => { setSelectedRole("retailer"); setFormData({}); }}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all duration-300 btn-animate shadow-lg"
               >
                 Register as Retailer
               </button>
@@ -115,10 +126,18 @@ export default function Register() {
           </div>
         </>
       ) : (
-        <div className="w-full max-w-md border rounded-2xl shadow-lg p-8 bg-white">
-          <h3 className="text-2xl font-bold text-green-700 mb-6 text-center capitalize">
-            {selectedRole} Registration
-          </h3>
+        <div className="w-full max-w-md border border-gray-200 rounded-2xl shadow-xl p-8 bg-white card-hover scale-in">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">
+                {selectedRole === 'farmer' ? '👩‍🌾' : selectedRole === 'distributor' ? '🚚' : '🛒'}
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent capitalize">
+              {selectedRole} Registration
+            </h3>
+            <p className="text-gray-600 text-sm">Fill in your details to get started</p>
+          </div>
           <form className="space-y-4" onSubmit={handleSubmit}>
             {roleInputs[selectedRole].map((input, idx) => (
               <div key={idx}>
@@ -131,7 +150,7 @@ export default function Register() {
                   placeholder={input.label}
                   value={formData[input.name] || ""}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
                   required
                 />
               </div>
@@ -140,7 +159,7 @@ export default function Register() {
             {success && <p className="text-green-600 text-sm">{success}</p>}
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 btn-animate shadow-lg font-medium"
             >
               Register as {selectedRole}
             </button>

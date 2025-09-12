@@ -11,14 +11,46 @@ import {
   MapPin,
   Star,
   Calendar,
-  BarChart3
+  BarChart3,
+  Send
 } from 'lucide-react';
 import Footer from '../components/Footer';
+import RequestPopup from '../components/RequestPopup';
 
 
 
 const RetailerDashboard = () => {
   const [activeTab, setActiveTab] = useState('Overview');
+  const [showRequestPopup, setShowRequestPopup] = useState(false);
+  const [requestFormData, setRequestFormData] = useState({
+    productName: '',
+    quantity: '',
+    preferredPrice: '',
+    deliveryDate: '',
+    specialRequirements: ''
+  });
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
+
+  const handleRequestSubmit = async (formData) => {
+    setIsSubmittingRequest(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Request submitted:', formData);
+      setShowRequestPopup(false);
+      setRequestFormData({
+        productName: '',
+        quantity: '',
+        preferredPrice: '',
+        deliveryDate: '',
+        specialRequirements: ''
+      });
+    } catch (error) {
+      console.error('Error submitting request:', error);
+    } finally {
+      setIsSubmittingRequest(false);
+    }
+  };
 
  const tabs = [
   { name: 'Overview' },
@@ -352,10 +384,13 @@ const RetailerDashboard = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 w-full sm:w-auto">
+              <button 
+                onClick={() => setShowRequestPopup(true)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 w-full sm:w-auto transition-all duration-200 btn-animate"
+              >
                 Request
               </button>
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 w-full sm:w-auto">
+              <button className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg text-sm hover:from-green-700 hover:to-green-800 w-full sm:w-auto transition-all duration-200 btn-animate">
                 Purchase
               </button>
             </div>
@@ -500,39 +535,53 @@ const renderContent = () => {
 };
   return (
     <>
-    <div className="min-h-screen bg-white">
-      
-      {/* Main Content */}
-      <div className="px-6 py-8 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Retailer Dashboard</h1>
-          <p className="text-gray-600">Source products from distributors and manage your retail inventory</p>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-green-50">
+        {/* Main Content */}
+        <div className="px-6 py-8 max-w-7xl mx-auto">
+          <div className="mb-8 fade-in">
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+              Retailer Dashboard
+            </h1>
+            <p className="text-gray-600">Source products from distributors and manage your retail inventory</p>
+          </div>
+
+          {/* Navigation Tabs */}
+          <div className="mb-8 fade-in-delay-1">
+            <nav className="flex flex-wrap gap-2 md:space-x-8 md:flex-row md:gap-0 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.name}
+                  onClick={() => setActiveTab(tab.name)}
+                  className={`py-3 px-6 font-medium rounded-xl transition-all duration-300 flex-1 min-w-[140px] btn-animate ${
+                    activeTab === tab.name
+                      ? 'bg-white text-gray-900 border-2 border-purple-300 shadow-lg transform scale-105'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50 border-2 border-transparent'
+                  }`}
+                >
+                  {tab.name}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="fade-in-delay-2">
+            {renderContent()}
+          </div>
         </div>
-
-        {/* Navigation Tabs */}
- 
-<div className="mb-8">
-  <nav className="flex flex-wrap gap-2 md:space-x-8 md:flex-row md:gap-0 overflow-x-auto">
-    {tabs.map((tab) => (
-      <button
-        key={tab.name}
-        onClick={() => setActiveTab(tab.name)}
-        className={`py-2 px-4 font-medium rounded-lg transition-colors flex-1 min-w-[140px] ${
-          activeTab === tab.name
-            ? 'bg-white text-gray-900 border border-gray-300'
-            : 'text-gray-600 hover:text-gray-900'
-        }`}
-      >
-        {tab.name}
-      </button>
-    ))}
-  </nav>
-</div>
-
-        {/* Tab Content */}
-        {renderContent()}
       </div>
-    </div>
+
+      {/* Request Popup */}
+      <RequestPopup
+        isOpen={showRequestPopup}
+        onClose={() => setShowRequestPopup(false)}
+        title="Send Request to Distributor"
+        formData={requestFormData}
+        setFormData={setRequestFormData}
+        onSubmit={handleRequestSubmit}
+        userRole="retailer"
+        isLoading={isSubmittingRequest}
+      />
     <Footer/>
     </>
   );

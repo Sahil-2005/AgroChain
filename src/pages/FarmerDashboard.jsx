@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Leaf, 
   Package, 
@@ -15,11 +15,16 @@ import {
   Check,
   X,
   Send,
-  Star
+  Star,
+  Loader2
 } from 'lucide-react';
+import QRCode from 'react-qr-code';
 import Footer from '../components/Footer';
+import { useAuth } from '../auth/AuthContext';
+import RequestPopup from '../components/RequestPopup';
 
 const FarmerDashboard = () => {
+  const { user, token } = useAuth();
   const [activeTab, setActiveTab] = useState('Overview');
   const [formData, setFormData] = useState({
     productName: '',
@@ -29,6 +34,21 @@ const FarmerDashboard = () => {
     basePrice: '',
     description: ''
   });
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showQRCode, setShowQRCode] = useState(null);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [showRequestPopup, setShowRequestPopup] = useState(false);
+  const [requestFormData, setRequestFormData] = useState({
+    productName: '',
+    quantity: '',
+    preferredPrice: '',
+    deliveryDate: '',
+    specialRequirements: ''
+  });
+  const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
 
   // Sample data
   const dashboardStats = {
@@ -64,56 +84,42 @@ const FarmerDashboard = () => {
     }
   ]);
 
-  const inventory = [
-    {
-      name: 'Organic Tomatoes',
-      batch: 'TOM-2024-001',
-      quantity: '500 lbs',
-      harvestDate: '2024-01-15',
-      location: 'Field A-1',
-      basePrice: '$2.5',
-      currentPrice: '$4.99',
-      increase: '+99.6%',
-      supplyChain: [
-        { stage: 'Farmer', price: '$2.5', active: true },
-        { stage: 'Distributor', price: '$3.2', company: 'FreshLink Distribution', active: true },
-        { stage: 'Retailer', price: '$4.99', company: 'Organic Market SF', active: true },
-        { stage: 'Consumer', active: false }
-      ]
-    },
-    {
-      name: 'Baby Carrots',
-      batch: 'CAR-2024-002',
-      quantity: '300 lbs',
-      harvestDate: '2024-01-18',
-      location: 'Field B-2',
-      basePrice: '$1.8',
-      currentPrice: '$2.4',
-      increase: '+33.3%',
-      supplyChain: [
-        { stage: 'Farmer', price: '$1.8', active: true },
-        { stage: 'Distributor', price: '$2.4', company: 'Valley Fresh Logistics', active: true },
-        { stage: 'Retailer', active: false },
-        { stage: 'Consumer', active: false }
-      ]
-    },
-    {
-      name: 'Romaine Lettuce',
-      batch: 'LET-2024-003',
-      quantity: '200 heads',
-      harvestDate: '2024-01-20',
-      location: 'Greenhouse 1',
-      basePrice: '$1.25',
-      currentPrice: '$1.25',
-      increase: '+0.0%',
-      supplyChain: [
-        { stage: 'Farmer', price: '$1.25', active: true },
-        { stage: 'Distributor', active: false },
-        { stage: 'Retailer', active: false },
-        { stage: 'Consumer', active: false }
-      ]
+  // API base URL
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  // Fetch inventory from backend
+  const fetchInventory = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`${apiBase}/api/farmer/inventory`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch inventory');
+      }
+      
+      const data = await response.json();
+      setInventory(data.inventory || []);
+    } catch (err) {
+      console.error('Failed to fetch inventory:', err);
+      setError('Failed to load inventory from server.');
+      setInventory([]); // Set empty array instead of sample data
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  // Load inventory on component mount
+  useEffect(() => {
+    if (token) {
+      fetchInventory();
+    }
+  }, [token]);
 
   const distributorRequests = [
     {
@@ -161,26 +167,112 @@ const FarmerDashboard = () => {
     });
   };
 
-  const handleAddProduct = () => {
-    setRecentActivity([
-      {
+  const handleAddProduct = async () => {
+    if (!formData.productName || !formData.quantity || !formData.harvestDate || !formData.farmLocation || !formData.basePrice) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    setAddingProduct(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const batchId = `${formData.productName?.slice(0,3)?.toUpperCase() || 'NEW'}-${new Date().getFullYear()}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+      
+      const productData = {
         name: formData.productName,
-        batch: `${formData.productName?.slice(0,3)?.toUpperCase() || 'NEW'}-${new Date().getFullYear()}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`,
+        batch: batchId,
         quantity: formData.quantity,
-        status: 'Farmer',
-        price: `$${formData.basePrice}/unit`,
-        icon: Package
-      },
-      ...recentActivity
-    ]);
-    setFormData({
-      productName: '',
-      quantity: '',
-      harvestDate: '',
-      farmLocation: '',
-      basePrice: '',
-      description: ''
+        harvestDate: formData.harvestDate,
+        location: formData.farmLocation,
+        basePrice: formData.basePrice,
+        description: formData.description,
+        farmerId: user.id
+      };
+
+      // Send to backend
+      const response = await fetch(`${apiBase}/api/farmer/inventory`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(productData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add product');
+      }
+
+      const newProduct = await response.json();
+      
+      // Update local state
+      setInventory([newProduct.product, ...inventory]);
+      setRecentActivity([
+        {
+          name: formData.productName,
+          batch: batchId,
+          quantity: formData.quantity,
+          status: 'Farmer',
+          price: `$${formData.basePrice}/unit`,
+          icon: Package
+        },
+        ...recentActivity
+      ]);
+
+      setSuccess('Product added successfully!');
+      setFormData({
+        productName: '',
+        quantity: '',
+        harvestDate: '',
+        farmLocation: '',
+        basePrice: '',
+        description: ''
+      });
+
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+
+    } catch (err) {
+      setError('Failed to add product. Please try again.');
+    } finally {
+      setAddingProduct(false);
+    }
+  };
+
+  const generateQRData = (item) => {
+    return JSON.stringify({
+      name: item.name,
+      batch: item.batch,
+      harvestDate: item.harvestDate,
+      location: item.location
     });
+  };
+
+  const toggleQRCode = (itemId) => {
+    setShowQRCode(showQRCode === itemId ? null : itemId);
+  };
+
+  const handleRequestSubmit = async (formData) => {
+    setIsSubmittingRequest(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Request submitted:', formData);
+      setShowRequestPopup(false);
+      setRequestFormData({
+        productName: '',
+        quantity: '',
+        preferredPrice: '',
+        deliveryDate: '',
+        specialRequirements: ''
+      });
+    } catch (error) {
+      console.error('Error submitting request:', error);
+    } finally {
+      setIsSubmittingRequest(false);
+    }
   };
 
   const getSupplyChainIcon = (stage) => {
@@ -197,60 +289,60 @@ const FarmerDashboard = () => {
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Batches</p>
               <p className="text-3xl font-bold text-gray-900">{recentActivity.length}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
               <Package className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">In Transit</p>
               <p className="text-3xl font-bold text-gray-900">{dashboardStats.inTransit}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Truck className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+              <Truck className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">At Retail</p>
               <p className="text-3xl font-bold text-gray-900">{dashboardStats.atRetail}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Store className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex items-center justify-center">
+              <Store className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Pending Requests</p>
               <p className="text-3xl font-bold text-gray-900">{dashboardStats.pendingRequests}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-orange-600" />
             </div>
           </div>
         </div>
       </div>
       {/* Recent Activity */}
-      <div className="bg-white rounded-xl border p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
         <h3 className="text-xl font-bold text-gray-900 mb-2">Recent Produce Activity</h3>
         <p className="text-gray-600 mb-6">Latest updates on your produce batches</p>
         <div className="space-y-4">
           {recentActivity.map((item, index) => (
-            <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300">
               <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
                   <item.icon className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
@@ -270,15 +362,37 @@ const FarmerDashboard = () => {
   );
 
   const renderAddProduct = () => (
-    <div className="bg-white rounded-xl border p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
       <div className="flex items-center space-x-3 mb-4">
-        <Plus className="w-6 h-6 text-gray-700" />
+        <div className="p-2 bg-green-100 rounded-lg">
+          <Plus className="w-6 h-6 text-green-600" />
+        </div>
         <h3 className="text-xl font-bold text-gray-900">Add New Produce Batch</h3>
       </div>
       <p className="text-gray-600 mb-6">Register a new batch of produce to the blockchain</p>
+      
+      {/* Error and Success Messages */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <p className="text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+      
+      {success && (
+        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <Check className="w-5 h-5 text-green-600" />
+            <p className="text-green-700">{success}</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
           <input
             type="text"
             name="productName"
@@ -286,10 +400,11 @@ const FarmerDashboard = () => {
             onChange={handleInputChange}
             placeholder="e.g., Organic Tomatoes"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
           <input
             type="text"
             name="quantity"
@@ -297,20 +412,22 @@ const FarmerDashboard = () => {
             onChange={handleInputChange}
             placeholder="e.g., 500 lbs"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Harvest Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Harvest Date *</label>
           <input
             type="date"
             name="harvestDate"
             value={formData.harvestDate}
             onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Farm Location</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Farm Location *</label>
           <input
             type="text"
             name="farmLocation"
@@ -318,10 +435,11 @@ const FarmerDashboard = () => {
             onChange={handleInputChange}
             placeholder="e.g., Field A-1"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Base Price (per unit)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Base Price (per unit) *</label>
           <input
             type="text"
             name="basePrice"
@@ -329,6 +447,7 @@ const FarmerDashboard = () => {
             onChange={handleInputChange}
             placeholder="e.g., 2.50"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            required
           />
         </div>
         <div className="sm:col-span-2">
@@ -345,29 +464,111 @@ const FarmerDashboard = () => {
       </div>
       <button
         onClick={handleAddProduct}
-        className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors"
+        disabled={addingProduct}
+        className="w-full mt-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center space-x-2 transition-all duration-300 btn-animate shadow-lg"
       >
-        <Plus className="w-5 h-5" />
-        <span>Add Produce & Generate QR Code</span>
+        {addingProduct ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span>Adding Product...</span>
+          </>
+        ) : (
+          <>
+            <Plus className="w-5 h-5" />
+            <span>Add Produce & Generate QR Code</span>
+          </>
+        )}
       </button>
     </div>
   );
 
   const renderInventory = () => (
     <div className="space-y-6">
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <span className="ml-2 text-gray-600">Loading inventory...</span>
+        </div>
+      )}
+      
+      {error && !loading && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            <p className="text-yellow-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {inventory.length === 0 && !loading && !error && (
+        <div className="bg-white rounded-xl border p-8 text-center">
+          <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Products Yet</h3>
+          <p className="text-gray-600 mb-4">Start by adding your first produce batch to see it here.</p>
+          <button
+            onClick={() => setActiveTab('Add Produce')}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Add Your First Product
+          </button>
+        </div>
+      )}
+
       {inventory.map((item, index) => (
-        <div key={index} className="bg-white rounded-xl border p-6">
+        <div key={item._id || index} className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
             <div>
               <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
               <p className="text-gray-600">{item.quantity} • Harvested {item.harvestDate} • {item.location}</p>
               <p className="text-sm text-gray-500">{item.batch}</p>
             </div>
-            <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors mt-2 sm:mt-0">
+            <button 
+              onClick={() => toggleQRCode(item._id || index)}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 rounded-lg transition-all duration-300 mt-2 sm:mt-0 btn-animate"
+            >
               <QrCode className="w-4 h-4" />
-              <span className="text-sm font-medium">QR Code</span>
+              <span className="text-sm font-medium">
+                {showQRCode === (item._id || index) ? 'Hide QR' : 'Show QR'}
+              </span>
             </button>
           </div>
+
+          {/* QR Code Display */}
+          {showQRCode === (item._id || index) && (
+            <div className="mb-6 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 scale-in">
+              <h4 className="font-semibold text-gray-900 mb-4">QR Code for {item.name}</h4>
+              <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                  <QRCode 
+                    value={generateQRData(item)}
+                    size={128}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                  />
+                </div>
+                <div className="text-sm text-gray-600">
+                  <p className="font-medium mb-3 text-gray-800">QR Code contains:</p>
+                  <ul className="space-y-2">
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>Product: {item.name}</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span>Batch: {item.batch}</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span>Harvest Date: {item.harvestDate}</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span>Location: {item.location}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Supply Chain Progress */}
           <div className="mb-6">
             <h4 className="font-semibold text-gray-900 mb-4">Supply Chain Progress</h4>
@@ -486,7 +687,10 @@ const FarmerDashboard = () => {
                   </div>
                 </div>
               </div>
-              <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors w-full sm:w-auto mt-2 sm:mt-0">
+              <button 
+                onClick={() => setShowRequestPopup(true)}
+                className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg transition-all duration-200 w-full sm:w-auto mt-2 sm:mt-0 btn-animate"
+              >
                 <Send className="w-4 h-4" />
                 <span>Send Request</span>
               </button>
@@ -506,39 +710,53 @@ const FarmerDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
           {/* Dashboard Header */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Farmer Dashboard</h1>
+          <div className="mb-6 sm:mb-8 fade-in">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+              Farmer Dashboard
+            </h1>
             <p className="text-gray-600 text-base sm:text-lg">
               Manage your produce, track supply chain, and connect with distributors
             </p>
           </div>
           {/* Navigation Tabs */}
-           <div className="mb-8">
-          <nav className="flex flex-wrap gap-2 md:space-x-8 md:flex-row md:gap-0 overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.name}
-                onClick={() => setActiveTab(tab.name)}
-                className={`py-2 px-4 font-medium rounded-lg transition-colors flex-1 min-w-[140px] ${
-                  activeTab === tab.name
-                    ? 'bg-white text-gray-900 border border-gray-300'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab.name}
-              </button>
-            ))}
-          </nav>
-        </div>
+          <div className="mb-8 fade-in-delay-1">
+            <nav className="flex flex-wrap gap-2 md:space-x-8 md:flex-row md:gap-0 overflow-x-auto">
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.name}
+                  onClick={() => setActiveTab(tab.name)}
+                  className={`py-3 px-6 font-medium rounded-xl transition-all duration-300 flex-1 min-w-[140px] btn-animate ${
+                    activeTab === tab.name
+                      ? 'bg-white text-gray-900 border-2 border-green-300 shadow-lg transform scale-105'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50 border-2 border-transparent'
+                  }`}
+                >
+                  {tab.name}
+                </button>
+              ))}
+            </nav>
+          </div>
           {/* Tab Content */}
-          <div>
+          <div className="fade-in-delay-2">
             {tabs.find(tab => tab.name === activeTab)?.component()}
           </div>
         </div>
       </div>
+
+      {/* Request Popup */}
+      <RequestPopup
+        isOpen={showRequestPopup}
+        onClose={() => setShowRequestPopup(false)}
+        title="Send Request to Distributor"
+        formData={requestFormData}
+        setFormData={setRequestFormData}
+        onSubmit={handleRequestSubmit}
+        userRole="farmer"
+        isLoading={isSubmittingRequest}
+      />
       <Footer/>
     </>
   );

@@ -10,33 +10,30 @@ export  function Homepage() {
 
   return (
     <>
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      
-
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
       {/* Hero Section */}
-      <section className="bg-white py-20">
+      <section className="bg-gradient-to-br from-white via-green-50 to-blue-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            Blockchain-Powered Transparency
+          <div className="inline-block bg-gradient-to-r from-green-100 to-green-200 text-green-800 px-6 py-3 rounded-full text-sm font-medium mb-6 fade-in shadow-sm">
+            🌱 Blockchain-Powered Transparency
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 fade-in-delay-1">
             Track Your Food
           </h1>
-          <h1 className="text-5xl md:text-6xl font-bold mb-8">
-            from <span className="text-green-600">Farm to Table</span>
+          <h1 className="text-5xl md:text-6xl font-bold mb-8 fade-in-delay-2">
+            from <span className="bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">Farm to Table</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto fade-in-delay-3">
             Revolutionary blockchain technology ensuring complete transparency in 
             agricultural supply chains. Know exactly where your food comes from, 
             every step of the way.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button   onClick={() => navigate("/trace")} className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center fade-in-delay-3">
+            <button onClick={() => navigate("/trace")} className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 flex items-center justify-center btn-animate shadow-lg">
               <Package className="mr-2 h-5 w-5" />
               Trace Produce Now
             </button>
-            <button   onClick={() => navigate("/login")} className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+            <button onClick={() => navigate("/login")} className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 btn-animate">
               Join as Partner
             </button>
           </div>
