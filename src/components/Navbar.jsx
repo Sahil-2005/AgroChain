@@ -20,7 +20,7 @@ export function Navbar() {
             <div className="p-2 rounded-full bg-green-100 group-hover:bg-green-200 transition-colors duration-300">
               <Leaf className="h-6 w-6 text-green-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <span className="font-bold text-2xl text-green-700 group-hover:text-green-800 transition-colors duration-300">AgroTrace</span>
+            <span className="font-bold text-2xl text-green-700 group-hover:text-green-800 transition-colors duration-300">AgroChain</span>
           </Link>
 
           {/* Desktop Links */}

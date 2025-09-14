@@ -289,7 +289,7 @@ const FarmerDashboard = () => {
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-4 sm:p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-slide-up">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Batches</p>
@@ -300,7 +300,7 @@ const FarmerDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-4 sm:p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-slide-up">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">In Transit</p>
@@ -311,7 +311,7 @@ const FarmerDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-4 sm:p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-slide-up">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">At Retail</p>
@@ -322,7 +322,7 @@ const FarmerDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-4 sm:p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 animate-slide-up">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Pending Requests</p>
@@ -335,8 +335,8 @@ const FarmerDashboard = () => {
         </div>
       </div>
       {/* Recent Activity */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Recent Produce Activity</h3>
+       <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md  rounded-xl border p-4 sm:p-6 animate-fade-in" style={{animationDelay: '0.4s'}}>
+       <h3 className="text-lg font-semibold mb-2 text-green-700 mb-2">Recent Produce Activity</h3>
         <p className="text-gray-600 mb-6">Latest updates on your produce batches</p>
         <div className="space-y-4">
           {recentActivity.map((item, index) => (
@@ -362,7 +362,7 @@ const FarmerDashboard = () => {
   );
 
   const renderAddProduct = () => (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
+    <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-6">
       <div className="flex items-center space-x-3 mb-4">
         <div className="p-2 bg-green-100 rounded-lg">
           <Plus className="w-6 h-6 text-green-600" />
@@ -515,7 +515,7 @@ const FarmerDashboard = () => {
       )}
 
       {inventory.map((item, index) => (
-        <div key={item._id || index} className="bg-white rounded-xl border border-gray-200 p-6 card-hover shadow-sm">
+        <div key={item._id || index} className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md  rounded-xl border p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
             <div>
               <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
@@ -624,8 +624,8 @@ const FarmerDashboard = () => {
   const renderRequests = () => (
     <div className="space-y-6">
       {/* Distributor Requests */}
-      <div className="bg-white rounded-xl border p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Distributor Requests</h3>
+      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-6">
+        <h3 className="text-xl font-bold text-blue-900 mb-2">Distributor Requests</h3>
         <p className="text-gray-600 mb-6">Manage incoming requests from distributors</p>
         <div className="space-y-6">
           {distributorRequests.map((request, index) => (
@@ -644,11 +644,11 @@ const FarmerDashboard = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Requested Product</p>
+                  <p className="text-sm font-medium text-blue-700">Requested Product</p>
                   <p className="text-gray-900">{request.product} • {request.quantity}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Offered Price</p>
+                  <p className="text-sm font-medium text-blue-700">Offered Price</p>
                   <p className="text-gray-900">{request.price}</p>
                 </div>
               </div>
@@ -668,7 +668,7 @@ const FarmerDashboard = () => {
         </div>
       </div>
       {/* Request Distributors */}
-      <div className="bg-white rounded-xl border p-6">
+      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl border p-6 shadow-md rounded-xl border p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-2">Request Distributors</h3>
         <p className="text-gray-600 mb-6">Send requests to specific distributors for your produce</p>
         <div className="space-y-4">
@@ -730,8 +730,8 @@ const FarmerDashboard = () => {
                   onClick={() => setActiveTab(tab.name)}
                   className={`py-3 px-6 font-medium rounded-xl transition-all duration-300 flex-1 min-w-[140px] btn-animate ${
                     activeTab === tab.name
-                      ? 'bg-white text-gray-900 border-2 border-green-300 shadow-lg transform scale-105'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50 border-2 border-transparent'
+                      ? 'bg-green-600 text-white border-green-600 shadow-md'
+                      : 'border-green-400 text-green-700 hover:bg-green-100'
                   }`}
                 >
                   {tab.name}

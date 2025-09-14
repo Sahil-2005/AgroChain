@@ -10,7 +10,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center mb-4">
               <Leaf className="h-8 w-8 text-green-400" />
-              <span className="ml-2 text-xl font-bold">AgroTrace</span>
+              <span className="ml-2 text-xl font-bold">AgroChain</span>
             </div>
             <p className="text-gray-400">
               Revolutionizing agricultural supply chains with blockchain
@@ -88,7 +88,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
           <p>
-            © {new Date().getFullYear()} AgroTrace. All rights reserved. Powered
+            © {new Date().getFullYear()} AgroChain. All rights reserved. Powered
             by blockchain technology.
           </p>
         </div>

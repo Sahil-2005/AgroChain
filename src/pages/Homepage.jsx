@@ -44,7 +44,7 @@ export  function Homepage() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">How AgroTrace Works</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">How AgroChain Works</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our blockchain-based system creates an immutable record of your produce 
               journey, ensuring transparency and trust at every step.
@@ -129,7 +129,7 @@ export  function Homepage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose AgroTrace?</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose AgroChain?</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Built on blockchain technology to ensure trust, transparency, and efficiency 
               across the entire agricultural supply chain.
